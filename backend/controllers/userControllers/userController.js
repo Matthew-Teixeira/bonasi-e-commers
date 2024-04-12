@@ -1,13 +1,16 @@
 const asyncHandler = require("express-async-handler");
 const { User } = require("../../db/models");
 const generateToken = require("../../utils/generateToken");
+const { findOneAndDelete } = require("../../db/models/User");
 
 const getUsers = asyncHandler(async (req, res) => {
-    res.status(200).json({ message: "You got all users" });
+    const allUsers = await User.find();
+    res.status(200).json(allUsers);
 });
 
 const getUserProfile = asyncHandler(async (req, res) => {
-
+    const user = req.user;
+    res.status(200).json(user);
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -54,11 +57,30 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-    res.status(200).json({ message: "You have updated this user!" });
+    const user = await User.findById(req.user._id).select("-__v");
+    if (user) {
+        user.username = req.body.username || user.username;
+        user.email = req.body.email || user.email;
+        if (req.body.password) {
+            user.password = req.body.password;
+        }
+
+        const updatedUser = await user.save();
+        res.status(200).json(updatedUser);
+    } else {
+        res.status(404);
+        throw new Error("User could not be found");
+    }
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
-    res.status(200).json({ message: "You have DELETED this user!" });
+    const userId = req.params._id;
+
+    const deletedUser = await User.findByIdAndDelete(
+        { _id: userId },
+        { new: true }
+    );
+    res.status(200).json(deletedUser);
 });
 
 module.exports = {

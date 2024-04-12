@@ -16,6 +16,6 @@ router.post("/login", loginUser);
 router.post("/register", registerUser);
 router.post("/logout", logoutUser);
 router.put("/profile", protected, updateUser);
-router.delete("/profile", protected, deleteUser);
+router.delete("/profile/:_id", protected, deleteUser);
 
 module.exports = router;
